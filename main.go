@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/anaskhan96/soup"
 	"io/ioutil"
-	"reader_parse/analyse/soup_like"
+	"reader_parse/analyse/gsoup"
 )
 
 func main() {
-	htmlBytes, err := ioutil.ReadFile("./html/起点-搜索.html")
+	htmlBytes, err := ioutil.ReadFile("./html/红袖-搜索.html")
 
 	if err != nil {
 		fmt.Println(err)
@@ -19,19 +19,26 @@ func main() {
 
 	doc := soup.HTMLParse(html)
 
-	elements := doc.Find("", "class", "book-img-text").FindAll("li")
+	rootAnalyse := gsoup.SoupAnalyse{
+		Element: &doc,
+	}
+
+	elements, err := rootAnalyse.GetElements("id.result-list@tag.li")
+	if err != nil {
+		return
+	}
 
 	for _, element := range elements {
-		analyse := soup_like.SoupAnalyse{
+		analyse := gsoup.SoupAnalyse{
 			Element: &element,
 		}
-		title, err1 := analyse.GetValue("tag.h4@a@text||tag.a.1@text")
+		title, err1 := analyse.GetValue("class.book-mid-info@tag.a.0@text")
 		if err1 == nil {
 			fmt.Println("书名：", title)
 		} else {
 			fmt.Println("书名规则错误，" + err1.Error())
 		}
-		author, err2 := analyse.GetValue("class.author@class.name.0@text||tag.a.2@text||tag.span@text")
+		author, err2 := analyse.GetValue("class.author@tag.a.0@text")
 		if err2 == nil {
 			fmt.Println("作者：", author)
 		} else {

@@ -1,4 +1,4 @@
-package soup_like
+package gsoup
 
 import (
 	"fmt"
@@ -12,33 +12,32 @@ type SoupAnalyse struct {
 	Element *soup.Root
 }
 
-//todo 替换过滤
 func (analyse SoupAnalyse) GetValue(rule string) (string, error) {
-	var ruleList []string
-	if strings.Contains(rule, "||") {
-		ruleList = strings.Split(rule, "||")
-	} else if strings.Contains(rule, "&&") {
-		ruleList = strings.Split(rule, "&&")
-	} else {
-		ruleList = append(ruleList, rule)
-	}
+	var ruleList []string = getRuleList(rule)
 
 	if len(ruleList) > 0 {
 		for _, subRule := range ruleList {
 			ruleParts := strings.Split(subRule, "@")
 			partsSize := len(ruleParts)
-			var elementList = emptyElementSlice()
-			elementList = append(elementList, *analyse.Element)
-			for i := 0; i < partsSize-1; i++ {
-				if len(elementList) == 0 {
-					break
-				} else {
-					elements, err := getElements(&elementList[0], ruleParts[0])
-					if err != nil {
-						return "", err
+			elementList := emptyElementSlice()
+			if partsSize < 2 {
+				return "", fmt.Errorf("rule %s is invalid", rule)
+			} else {
+				elementListRule := ""
+				for i := 0; i < partsSize-1; i++ {
+					if i == partsSize-2 {
+						elementListRule += ruleParts[i]
 					} else {
-						elementList = elements
+						elementListRule += ruleParts[i]
+						elementListRule += "@"
 					}
+				}
+
+				elements, err := analyse.GetElements(elementListRule)
+				if err != nil {
+					continue
+				} else {
+					elementList = elements
 				}
 			}
 
@@ -52,6 +51,58 @@ func (analyse SoupAnalyse) GetValue(rule string) (string, error) {
 	} else {
 		return "", fmt.Errorf("rule %s is invalid", rule)
 	}
+}
+
+func (analyse SoupAnalyse) GetElements(rule string) ([]soup.Root, error) {
+	var ruleList []string = getRuleList(rule)
+
+	if len(ruleList) > 0 {
+		for _, subRule := range ruleList {
+			ruleParts := strings.Split(subRule, "@")
+			partsSize := len(ruleParts)
+			var elementList = emptyElementSlice()
+			elementList = append(elementList, *analyse.Element)
+			for ruleIndex := 0; ruleIndex < partsSize; ruleIndex++ {
+				if len(elementList) == 0 {
+					break
+				} else {
+					parentSize := len(elementList)
+					tmpList := emptyElementSlice()
+					for parentIndex := 0; parentIndex < parentSize; parentIndex++ {
+						elements, err := getElements(&elementList[parentIndex], ruleParts[ruleIndex])
+						if err == nil {
+							tmpList = append(tmpList, elements...)
+						}
+					}
+
+					elementList = tmpList
+				}
+			}
+
+			if len(elementList) == 0 {
+				continue
+			} else {
+				return elementList, nil
+			}
+		}
+
+		return emptyElementSlice(), fmt.Errorf("rule %s is invalid", rule)
+	} else {
+		return emptyElementSlice(), fmt.Errorf("rule %s is invalid", rule)
+	}
+}
+
+func getRuleList(rule string) []string {
+	var ruleList []string
+	if strings.Contains(rule, "||") {
+		ruleList = strings.Split(rule, "||")
+	} else if strings.Contains(rule, "&&") {
+		ruleList = strings.Split(rule, "&&")
+	} else {
+		ruleList = append(ruleList, rule)
+	}
+
+	return ruleList
 }
 
 func emptyElementSlice() []soup.Root {
@@ -237,6 +288,7 @@ func getRealPosition(position string, listSize int) (int, bool) {
 	}
 }
 
+//todo 替换过滤
 func getAttribute(elementList []soup.Root, rule string) (string, error) {
 	var result = ""
 	if len(elementList) == 0 {
