@@ -54,6 +54,10 @@ func main() {
 		if err4 == nil {
 			fmt.Println("封面：", coverImgUrl)
 		}
+		lastChapter, err5 := analyse.GetValue("class.update@tag.a@text##最新更新")
+		if err5 == nil {
+			fmt.Println("最新章节：", lastChapter)
+		}
 		fmt.Println()
 	}
 

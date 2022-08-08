@@ -2,6 +2,7 @@ package gsoup
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -294,8 +295,11 @@ func getAttribute(elementList []soup.Root, rule string) (string, error) {
 	if len(elementList) == 0 {
 		return "", fmt.Errorf("elementList size is 0")
 	} else {
+		attributeParts := strings.Split(rule, "##")
+		attribute := attributeParts[0]
+
 		for _, element := range elementList {
-			switch rule {
+			switch attribute {
 			case "text", "textNodes", "ownText":
 				{
 					result += element.FullText()
@@ -314,7 +318,38 @@ func getAttribute(elementList []soup.Root, rule string) (string, error) {
 		if result == "" {
 			return result, fmt.Errorf("attributes is not exists")
 		} else {
+			if len(attributeParts) > 1 {
+				result = replace(result, attributeParts[1:])
+			}
+
 			return result, nil
 		}
 	}
+}
+
+func replace(result string, replaceList []string) string {
+	if len(replaceList) == 0 {
+		return result
+	}
+
+	tmp := result
+	for i := 0; i < len(replaceList); i++ {
+		if i % 2 == 0 {
+			regexRule := replaceList[i]
+			replaceText := ""
+			if i + 1 < len(replaceList) {
+				i++
+				replaceText = replaceList[i]
+			}
+			
+			regex, err := regexp.Compile(regexRule)
+			if err != nil{
+				break
+			} else {
+				 tmp = regex.ReplaceAllString(tmp, replaceText)
+			}
+		}
+	}
+
+	return tmp
 }
