@@ -32,7 +32,7 @@ func main() {
 		analyse := gsoup.SoupAnalyse{
 			Element: &element,
 		}
-		title, err1 := analyse.GetValue("class.book-mid-info@tag.a.0@text")
+		title, err1 := analyse.GetValue("class.book-mid-info@tag.a@.0@text")
 		if err1 == nil {
 			fmt.Println("书名：", title)
 		} else {
@@ -57,6 +57,10 @@ func main() {
 		lastChapter, err5 := analyse.GetValue("class.update@tag.a@text##最新更新")
 		if err5 == nil {
 			fmt.Println("最新章节：", lastChapter)
+		}
+		kind, err6 := analyse.GetValue("class.author@tag.a.1@text&&class.author@tag.span@text&&class.update@tag.span@text##\\s.*")
+		if err6 == nil {
+			fmt.Println("类型：", kind)
 		}
 		fmt.Println()
 	}

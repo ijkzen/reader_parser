@@ -131,18 +131,15 @@ func getElements(element *soup.Root, rule string) ([]soup.Root, error) {
 		case 1:
 			{
 				index := parts[0]
-				position, err := strconv.Atoi(index)
-				if err != nil {
-					return make([]soup.Root, 0), err
+			
+				childrenSize := len(element.Children())
+				finalPosition, err1 := getSliceIndex(childrenSize, index)
+				if err1 != nil {
+					return emptyElementSlice(), err1
 				} else {
-					childrenSize := len(element.Children())
-					if position < childrenSize {
-						slice := emptyElementSlice()
-						slice = append(slice, *&element.Children()[position])
-						return slice, nil
-					} else {
-						return emptyElementSlice(), fmt.Errorf("child size %d, but position is %d", childrenSize, position)
-					}
+					slice := emptyElementSlice()
+					slice = append(slice, *&element.Children()[finalPosition])
+					return slice, nil
 				}
 
 			}
@@ -187,14 +184,21 @@ func getElements(element *soup.Root, rule string) ([]soup.Root, error) {
 		}
 
 	} else if strings.Contains(rule, "[") && strings.Contains(rule, "]") {
-		//todo
+
 		children := element.Children()
 		startIndex := strings.Index(rule, "[")
-		endIndex := strings.Index(rule, "]")
+		endIndex := strings.Index(rule, "]") + 1
 
 		part3 := rule[startIndex:endIndex]
 		if strings.Contains(part3, ":") {
-			return emptyElementSlice(), fmt.Errorf("暂不支持区间写法")
+			tmpList := emptyElementSlice()
+			for _, child := range children {
+				slice, err := getElementsBySlice(child.Children(), part3)
+				if err == nil {
+					tmpList = append(tmpList, slice...)
+				}
+			}
+			return tmpList, nil
 		}
 
 		return getElementsByPosition(children, part3)
@@ -227,14 +231,97 @@ func getChildren(element *soup.Root, part1 string, part2 string) ([]soup.Root, e
 	}
 }
 
-func getElementsByPosition(children []soup.Root, positionRule string) ([]soup.Root, error) {
-	var positionList []string
-	if strings.Contains(positionRule, ":") {
-		positionList = strings.Split(positionRule, ":")
-	} else if strings.Contains(positionRule, ",") {
-		positionList = strings.Split(positionRule, ",")
+// [1:9], [1:9:2]
+func getElementsBySlice(children []soup.Root, sliceRule string) ([]soup.Root, error) {
+	if strings.Contains(sliceRule, "[") && strings.Contains(sliceRule, "]") && strings.Contains(sliceRule, ":") {
+		tmpStr := strings.Replace(sliceRule, "[", "", -1)
+		tmpStr = strings.Replace(tmpStr, "]", "", -1)
+
+		sliceParts := strings.Split(tmpStr, ":")
+		childrenSize := len(children)
+		switch len(sliceParts) {
+		case 1:
+			{
+				start, err := getSliceIndex(childrenSize, sliceParts[0])
+				if err != nil {
+					return emptyElementSlice(), err
+				} else {
+					return children[start:], nil
+				}
+			}
+		case 2:
+			{
+				
+				start, err1 := getSliceIndex(childrenSize, sliceParts[0])
+				if err1 != nil {
+					return emptyElementSlice(), err1
+				} else {
+					end, err2 := getSliceIndex(childrenSize, sliceParts[1])
+					if err2 != nil {
+						return emptyElementSlice(), err2
+					} else {
+						return children[start:end+1], nil
+					}
+				}
+			}
+		case 3:
+			{
+				start, err1 := getSliceIndex(childrenSize, sliceParts[0])
+				end, err2   := getSliceIndex(childrenSize, sliceParts[1])
+				step, err3  := getSliceIndex(childrenSize, sliceParts[2])
+
+				if err1 != nil || err2 != nil || err3 != nil {
+					return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
+				} else {
+					tmpSlice := emptyElementSlice()
+					for i := start; i <= end; {
+						tmpSlice = append(tmpSlice, children[i])
+						i += step
+					}
+					return tmpSlice, nil
+				}
+			}
+		default: {
+			return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
+		}
+		}
 	} else {
-		positionList = append(positionList, positionRule)
+		return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
+	}
+}
+
+func getSliceIndex(size int, index string) (int, error) {
+	result, err := strconv.Atoi(index)
+	if err != nil {
+		return 0, err
+	} else {
+		if result < 0 {
+			if result + size >= 0 {
+				return result + size, nil
+			} else {
+				return 0, fmt.Errorf("index %d is invalid", result)
+			}
+		} else {
+			if result < size {
+				return result, nil
+			} else {
+				return 0, fmt.Errorf("index %d is invalid", result)
+			}
+		}
+	}
+}
+
+func getElementsByPosition(children []soup.Root, positionRule string) ([]soup.Root, error) {
+	tmpStr := strings.Replace(positionRule, "[", "", -1)
+	tmpStr = strings.Replace(tmpStr, "]", "", -1)
+
+	var positionList []string
+	if strings.Contains(tmpStr, ":") {
+		positionList = strings.Split(tmpStr, ":")
+	} else if strings.Contains(tmpStr, ",") {
+		positionList = strings.Split(tmpStr, ",")
+	} else {
+		positionList = append(positionList, tmpStr)
 	}
 
 	positionSize := len(positionList)
@@ -289,7 +376,6 @@ func getRealPosition(position string, listSize int) (int, bool) {
 	}
 }
 
-//todo 替换过滤
 func getAttribute(elementList []soup.Root, rule string) (string, error) {
 	var result = ""
 	if len(elementList) == 0 {
@@ -302,6 +388,8 @@ func getAttribute(elementList []soup.Root, rule string) (string, error) {
 			switch attribute {
 			case "text", "textNodes", "ownText":
 				{
+					html := element.HTML()
+					fmt.Println(html)
 					result += element.FullText()
 				}
 			default:
