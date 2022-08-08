@@ -119,8 +119,8 @@ func emptyElementSlice() []soup.Root {
  * tag.li.0:1
  * .1
  * [0,1,2,!3]
- * [1:9] // 暂不适配
- * [1:9:2] // 暂不适配
+ * [1:9]
+ * [1:9:2]
  * children[1]
  */
 func getElements(element *soup.Root, rule string) ([]soup.Root, error) {
@@ -131,14 +131,13 @@ func getElements(element *soup.Root, rule string) ([]soup.Root, error) {
 		case 1:
 			{
 				index := parts[0]
-			
 				childrenSize := len(element.Children())
 				finalPosition, err1 := getSliceIndex(childrenSize, index)
 				if err1 != nil {
 					return emptyElementSlice(), err1
 				} else {
 					slice := emptyElementSlice()
-					slice = append(slice, *&element.Children()[finalPosition])
+					slice = append(slice, element.Children()[finalPosition])
 					return slice, nil
 				}
 
@@ -251,7 +250,7 @@ func getElementsBySlice(children []soup.Root, sliceRule string) ([]soup.Root, er
 			}
 		case 2:
 			{
-				
+
 				start, err1 := getSliceIndex(childrenSize, sliceParts[0])
 				if err1 != nil {
 					return emptyElementSlice(), err1
@@ -260,15 +259,15 @@ func getElementsBySlice(children []soup.Root, sliceRule string) ([]soup.Root, er
 					if err2 != nil {
 						return emptyElementSlice(), err2
 					} else {
-						return children[start:end+1], nil
+						return children[start : end+1], nil
 					}
 				}
 			}
 		case 3:
 			{
 				start, err1 := getSliceIndex(childrenSize, sliceParts[0])
-				end, err2   := getSliceIndex(childrenSize, sliceParts[1])
-				step, err3  := getSliceIndex(childrenSize, sliceParts[2])
+				end, err2 := getSliceIndex(childrenSize, sliceParts[1])
+				step, err3 := getSliceIndex(childrenSize, sliceParts[2])
 
 				if err1 != nil || err2 != nil || err3 != nil {
 					return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
@@ -281,9 +280,10 @@ func getElementsBySlice(children []soup.Root, sliceRule string) ([]soup.Root, er
 					return tmpSlice, nil
 				}
 			}
-		default: {
-			return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
-		}
+		default:
+			{
+				return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
+			}
 		}
 	} else {
 		return emptyElementSlice(), fmt.Errorf("sliceRule %s is invalid", sliceRule)
@@ -296,7 +296,7 @@ func getSliceIndex(size int, index string) (int, error) {
 		return 0, err
 	} else {
 		if result < 0 {
-			if result + size >= 0 {
+			if result+size >= 0 {
 				return result + size, nil
 			} else {
 				return 0, fmt.Errorf("index %d is invalid", result)
@@ -388,8 +388,6 @@ func getAttribute(elementList []soup.Root, rule string) (string, error) {
 			switch attribute {
 			case "text", "textNodes", "ownText":
 				{
-					html := element.HTML()
-					fmt.Println(html)
 					result += element.FullText()
 				}
 			default:
@@ -422,19 +420,19 @@ func replace(result string, replaceList []string) string {
 
 	tmp := result
 	for i := 0; i < len(replaceList); i++ {
-		if i % 2 == 0 {
+		if i%2 == 0 {
 			regexRule := replaceList[i]
 			replaceText := ""
-			if i + 1 < len(replaceList) {
+			if i+1 < len(replaceList) {
 				i++
 				replaceText = replaceList[i]
 			}
-			
+
 			regex, err := regexp.Compile(regexRule)
-			if err != nil{
+			if err != nil {
 				break
 			} else {
-				 tmp = regex.ReplaceAllString(tmp, replaceText)
+				tmp = regex.ReplaceAllString(tmp, replaceText)
 			}
 		}
 	}

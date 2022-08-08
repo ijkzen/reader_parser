@@ -32,7 +32,7 @@ func main() {
 		analyse := gsoup.SoupAnalyse{
 			Element: &element,
 		}
-		title, err1 := analyse.GetValue("class.book-mid-info@tag.a@.0@text")
+		title, err1 := analyse.GetValue("class.book-mid-info@tag.a.0@text")
 		if err1 == nil {
 			fmt.Println("书名：", title)
 		} else {
