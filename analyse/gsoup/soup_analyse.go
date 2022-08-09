@@ -190,14 +190,12 @@ func getElements(element *soup.Root, rule string) ([]soup.Root, error) {
 
 		part3 := rule[startIndex:endIndex]
 		if strings.Contains(part3, ":") {
-			tmpList := emptyElementSlice()
-			for _, child := range children {
-				slice, err := getElementsBySlice(child.Children(), part3)
-				if err == nil {
-					tmpList = append(tmpList, slice...)
-				}
+			slice, err := getElementsBySlice(children, part3)
+			if err != nil {
+				return emptyElementSlice(), fmt.Errorf("section rule %s is invalid", rule)
+			} else {
+				return slice, nil
 			}
-			return tmpList, nil
 		}
 
 		return getElementsByPosition(children, part3)
