@@ -12,6 +12,8 @@ github.com/larstos/convert v0.0.0-20210409072724-dc1ef6f10686 h1:2noGz7vPGzmaIZ3
 github.com/larstos/convert v0.0.0-20210409072724-dc1ef6f10686/go.mod h1:BWUniXDRb81pdgg8zk1lNRBt6FfXeqqAebi1O295grA=
 github.com/larstos/jsonpath_go v0.0.0-20210608084149-32a084235e69 h1:TpQlKx/rvbMoWq6xEf36gDYzR4uA6wvumUsGXoL/gug=
 github.com/larstos/jsonpath_go v0.0.0-20210608084149-32a084235e69/go.mod h1:s/ontXwBIOnOJ8zCRJmx7+s3KOh4YQTGttyOVO5LBKE=
+github.com/ohler55/ojg v1.14.4 h1:L2ds8AlB5t/QbqSfhRwvagJzQ7pgmdrefMIypQs0Xik=
+github.com/ohler55/ojg v1.14.4/go.mod h1:7Ghirupn8NC8hSSDpI0gcjorPxj+vSVIONDWfliHR1k=
 github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852 h1:Yl0tPBa8QPjGmesFh1D0rDy+q1Twx6FyU7VWHi8wZbI=
 github.com/oliveagle/jsonpath v0.0.0-20180606110733-2e52cf6e6852/go.mod h1:eqOVx5Vwu4gd2mmMZvVZsgIqNSaW3xxRThUJ0k/TPk4=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

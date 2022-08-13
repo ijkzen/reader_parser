@@ -1,7 +1,6 @@
 package test
 
 import (
-	"encoding/json"
 	"os"
 	gson "reader_parse/analyse/json"
 	"reflect"
@@ -16,16 +15,15 @@ func TestJsonElement(t *testing.T) {
 		return
 	}
 
-	var json_data interface{}
-	json.Unmarshal(jsonBytes, &json_data)
+	json := string(jsonBytes)
 
-	analyse := gson.JsonAnalyse {
-		Json: json_data,
+	analyse := gson.JsonAnalyse{
+		Json: json,
 	}
 
-	elements, err := analyse.GetElements("$..books[*]");
+	elements, err := analyse.GetElements("$..books[*]")
 
-	if  err == nil || reflect.TypeOf(elements).Kind() == reflect.Slice {
+	if err == nil || reflect.TypeOf(elements).Kind() == reflect.Slice {
 		if reflect.ValueOf(elements).Len() != 100 {
 			t.Errorf("want 100 but %d", reflect.ValueOf(elements).Len())
 		}
